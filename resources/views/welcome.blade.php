@@ -9,7 +9,7 @@
                 <h1>Welcome to the Microposts</h1>
                 
                 {{--ユーザー登録ページのリンク--}}
-                {!! link_to_route('signup.get', 'Sign up now!', [], ['class' =>'btn btn-primary'}) !!}
+                {!! link_to_route('signup.get', 'Sign up now!', [], ['class' =>'btn btn-primary']) !!}
     
             </div>
         </div>
