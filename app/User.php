@@ -104,6 +104,26 @@ class User extends Authenticatable
     
     public function loadRelationshipCounts()
     {
-        $this->loadCount('microposts');
+        $this->loadCount(['microposts', 'followings', 'followers', 'favorites']);
     }
+    
+    
+    //このユーザーとフォロー中ユーザーの投稿に絞り込む
+    public function feed_microposts()
+    {
+        //このユーザーがフォロー中のユーザーidを取得し配列する
+        $userIds = $this->followings()->pluck('users.id')->toArray();
+        //このユーザのidもその配列に追加
+        $userIds[] = $this->id;
+        //それらのユーザが所有する投稿に絞り込む
+        return Micropost::whereIn('user_id', $userIds);
+    }
+    
+    
+    //お気に入り機能
+    public function favorites()
+    {
+        return $this->belongsToMany(User::class, 'favorites', 'user_id', 'micropost_id')->withTimestamps();
+    }
+
 }
