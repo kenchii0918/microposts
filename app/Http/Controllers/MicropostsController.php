@@ -73,4 +73,22 @@ class MicropostsController extends Controller
             'microposts' => $microposts,
         ]);
     }
+    
+    public function favorites($id)
+    {
+        // idの値でmicropostを検索して取得
+        $micropostId = Micropost::findOrFail($id);
+
+        // 関係するモデルの件数をロード
+        $micropostId->loadRelationshipCounts();
+
+        // ユーザのお気に一覧を取得
+        $favorites = $user->favorites()->paginate(10);
+
+        // お気に一覧ビューでそれらを表示
+        return view('users.favorites', [
+            'user' => $user,
+            'users' => $favorites,
+        ]);
+    }
 }

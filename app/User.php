@@ -6,6 +6,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+
 class User extends Authenticatable
 {
     use Notifiable;
@@ -102,12 +103,6 @@ class User extends Authenticatable
     }
     
     
-    public function loadRelationshipCounts()
-    {
-        $this->loadCount(['microposts', 'followings', 'followers', 'favorites']);
-    }
-    
-    
     //このユーザーとフォロー中ユーザーの投稿に絞り込む
     public function feed_microposts()
     {
@@ -119,11 +114,60 @@ class User extends Authenticatable
         return Micropost::whereIn('user_id', $userIds);
     }
     
+    public function loadRelationshipCounts()
+    {
+        $this->loadCount(['microposts', 'followings', 'followers', 'favorites']);
+    }
     
-    //お気に入り機能
+    
+    
+    
+    //このユーザーがお気に中のmicropost
     public function favorites()
     {
-        return $this->belongsToMany(User::class, 'favorites', 'user_id', 'micropost_id')->withTimestamps();
+        return $this->belongsToMany(Micropost::class, 'favorites', 'user_id', 'micropost_id')->withTimestamps();
     }
-
+    
+    
+    //$micropostIdで指定されたmicropostoをお気に入りする
+    public function favorite($micropostId)
+    {
+        //すでにお気にしていないか確認
+        $exist = $this->is_favorite($micropostId);
+        
+        
+        if ($exist){
+            //すでにお気にしていれば何もしない
+            return false;
+        } else {
+            //未お気にならお気にする
+            $this->favorites()->attach($micropostId);
+            return true;
+        }
+    }
+    
+    //$micropostIdで指定されたお気にを解除する
+    public function unfavorite($micropostId)
+    {
+        //すでにお気にしていないか確認
+        $exist = $this->is_favorite($micropostId);
+        
+        if ($exist) {
+            //お気にしていればお気にを解除
+            $this->favorites()->detach($micropostId);
+            return true;
+        } else {
+            //未お気にであれば何もしない
+            return false;
+        }
+    }
+    
+     //指定された$micropostIdのmicropostをこのユーザがお気に中であるか調べる
+    public function is_favorite($micropostId)
+    {
+        //dd('注目している投稿番号は' . $micropostId);
+        //お気にしているお気に入りの中に$micropostIdがあるか確認する
+        return $this->favorites()->where('micropost_id', $micropostId)->exists();
+    }
+    
 }
